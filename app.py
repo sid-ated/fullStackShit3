@@ -15,11 +15,11 @@ model = pickle.load(open('model.pkl', 'rb'))
 def home():
     return render_template('index.html')
     
-    '''
+ 
 @app.route('/get_symptoms', methods=['GET'])
 def get_symptoms():       
-	return jsonify(list(cols_total))
-	'''
+	return "working"
+	
 
 @app.route('/predict',methods=['POST'])
 def predict():
