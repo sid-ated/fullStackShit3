@@ -1,11 +1,7 @@
-import numpy as np
-from flask import Flask, request, jsonify, render_template, redirect, url_for
-import pickle
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from joblib import load
 import pandas as pd
 
-app = Flask(__name__)
-model = pickle.load(open('model.pkl', 'rb'))
 pipeline = load("disease_predictor.joblib")
 
 cols_total = [
@@ -418,7 +414,7 @@ cols_total = [
 def requestResults(test):
     y_pred = pipeline.predict(test)
     return y_pred
-    
+
 def preProcess(symp_list):
     cols = cols_total
     data_frame = pd.DataFrame(columns=cols)
@@ -434,12 +430,10 @@ def preProcess(symp_list):
     X = data_frame.iloc[:,:].values
     return X
     
-@app.route('/')
-def home():
-    return render_template('index.html')
-    
- 
-@app.route('/disease_predictor_model', methods=['POST', 'GET'])
+
+flask_runner = Flask(__name__)
+
+@flask_runner.route('/disease_predictor_model', methods=['POST', 'GET'])
 def get_data():
     if request.method == 'POST':
         data = request.get_json()
@@ -448,24 +442,11 @@ def get_data():
         #print(result_data)
         return jsonify(result_data[0])
         
-@app.route('/get_symptoms', methods=['GET'])
+@flask_runner.route('/get_symptoms', methods=['GET'])
 def get_symptoms():       
 	return jsonify(list(cols_total))
-	
-
-@app.route('/predict',methods=['POST'])
-def predict():
-    '''
-    For rendering results on HTML GUI
-    '''
-    int_features = [int(x) for x in request.form.values()]
-    final_features = [np.array(int_features)]
-    prediction = model.predict(final_features)
-
-    output = round(prediction[0], 2)
-
-    return render_template('index.html', prediction_text='Employee Salary should be $ {}'.format(output))
+        
+if __name__ == '__main__':
+	flask_runner.run(debug=True)
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
